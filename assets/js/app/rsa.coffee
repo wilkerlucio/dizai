@@ -40,8 +40,9 @@ rsa.factory "keygen", ["RSAKey", (RSAKey) ->
 rsa.factory "toPubKey", ->
   (key) -> {n: key.n.toString(16), e: key.e.toString(16)}
 
-rsa.factory "fromPubKey", ->
+rsa.factory "fromPubKey", ["RSAKey", (RSAKey) ->
   (key) ->
     rsa = new RSAKey()
     rsa.setPublic(key.n, key.e)
     rsa
+]

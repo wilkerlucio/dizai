@@ -27,3 +27,14 @@ describe "RSA Module", ->
         rsa.generate(1024, "10001")
         text = "sample text sample text sample text sample text sample text sample text sample text sample text sample text sample text "
         expect(rsa.decrypt(rsa.encrypt(text))).toEqual(text)
+
+  it "generate a key on the fly", inject (RSAKey, keygen) ->
+    expect(keygen()).toEqual(jasmine.any(RSAKey))
+
+  it "can convert a pubkey, encode and decode from it", inject (keygen, toPubKey, fromPubKey) ->
+    string = "sample"
+    key = keygen()
+    pub = toPubKey(key)
+    pubKey = fromPubKey(pub)
+    encoded = pubKey.encrypt(string)
+    expect(key.decrypt(encoded)).toEqual(string)
