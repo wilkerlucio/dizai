@@ -1,11 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="dizae">
   <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <title>DizAe!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- css("foundation.min") %>
+    <%- css("app") %>
   </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+  <body ng-controller="ChatCtrl">
+    <form ng-submit="postMessage()">
+      <div class="row">
+        <h1>DizAe!</h1>
+      </div>
+      <div class="row collapse">
+        <div class="twelve columns">
+          <div id="message-panel" class="panel">
+            <div class="message {{message.owner}}" ng-class="{pending:message.pending}" ng-repeat="message in messages">{{message.date | date:'HH:mm:ss'}} - {{message.content}}</div>
+          </div>
+        </div>
+      </div>
+      <div class="row collapse">
+        <div class="ten columns">
+          <input type="text" ng-model="message">
+        </div>
+        <div class="two columns">
+          <button type="submit" class="button expand postfix">Enviar</button>
+        </div>
+      </div>
+    </form>
+    <%- js("application") %>
   </body>
 </html>
