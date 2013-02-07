@@ -13,12 +13,13 @@ rsa.factory "RSAKey", ->
       for i in [0...chunks]
         x = i * size
         chunk = string.substr(x, size)
-        encrypted += super(chunk)
+        brick = super(chunk)
+        brick += "Z" while brick.length < @chunkDecodeSize()
+        encrypted += brick
 
-      hex2b64(encrypted)
+      encrypted
 
     decrypt: (string) ->
-      string = b64tohex(string)
       decrypted = ""
       size = @chunkDecodeSize()
       chunks = string.length / size
@@ -26,7 +27,10 @@ rsa.factory "RSAKey", ->
       for i in [0...chunks]
         x = i * size
         chunk = string.substr(x, size)
-        decrypted += super(chunk)
+        chunk = chunk.substr(chunk, chunk.length - 1) while chunk.charAt(chunk.length - 1) == "Z"
+        brick = super(chunk)
+
+        decrypted += brick
 
       decrypted
 
