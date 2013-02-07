@@ -14,7 +14,9 @@
       <div class="row collapse">
         <div class="twelve columns">
           <div id="message-panel" class="panel">
-            <div class="message {{message.owner}}" ng-class="{pending:message.pending}" ng-repeat="message in messages">{{message.date | date:'HH:mm:ss'}} - {{message.content}}</div>
+            <div class="message-container" ng-repeat="message in messages">
+              <div class="message {{message.owner}}" ng-class="{pending:message.pending}" ng-class-even="'their'"><small>[{{message.date | date:'HH:mm:ss'}}]</small> {{message.content}}</div>
+            </div>
           </div>
         </div>
       </div>
