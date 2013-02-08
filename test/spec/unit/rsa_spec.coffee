@@ -5,18 +5,6 @@ describe "RSA Module", ->
     rsa = null
     beforeEach inject (RSAKey) -> rsa = new RSAKey()
 
-    it "calculates the decode chunk size", ->
-      rsa.generate(128, "10001")
-      expect(rsa.chunkDecodeSize()).toBe(32)
-      rsa.generate(64, "10001")
-      expect(rsa.chunkDecodeSize()).toBe(16)
-
-    it "calculates the encode chunk size", ->
-      rsa.generate(256, "10001")
-      expect(rsa.chunkEncodeSize()).toBe(21)
-      rsa.generate(128, "10001")
-      expect(rsa.chunkEncodeSize()).toBe(5)
-
     describe "encode and decode", ->
       it "an one chunk sized content", ->
         rsa.generate(256, "10001")
@@ -36,7 +24,7 @@ describe "RSA Module", ->
 
   it "can convert a pubkey, encode and decode from it", inject (keygen, toPubKey, fromPubKey) ->
     string = "sample"
-    key = keygen()
+    key = keygen(128)
     pub = toPubKey(key)
     pubKey = fromPubKey(pub)
     encoded = pubKey.encrypt(string)

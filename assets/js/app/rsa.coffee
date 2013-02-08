@@ -1,52 +1,47 @@
-rsa = angular.module("rsa", [])
+rsa = angular.module("rsa", ["utils"])
 
-rsa.factory "RSAKey", ->
-  class RSAKeyExtended extends RSAKey
-    chunkDecodeSize: -> @n.toString(16).length
-    chunkEncodeSize: -> Math.floor(@chunkDecodeSize() / 2) - 11
+class Base64EncodedRSAKey extends RSAKey
+  encrypt: (string) -> hex2b64(super(string))
+  decrypt: (string) -> super(b64tohex(string))
 
+class ChunkedString
+  constructor: (@string, @size) ->
+  each: (iterator) ->
+    chunks = Math.ceil(@string.length / @size)
+
+    for i in [0...chunks]
+      x = i * @size
+      chunk = @string.substr(x, @size)
+      iterator(chunk)
+
+  inject: (accumulator, iterator) ->
+    @each (chunk) -> accumulator = iterator(accumulator, chunk)
+    accumulator
+
+rsa.factory "RSAKey", ["inject", (inject) ->
+  class MultiChunkRSAKey extends Base64EncodedRSAKey
     encrypt: (string) ->
-      encrypted = ""
-      size = @chunkEncodeSize()
-      chunks = Math.ceil(string.length / size)
-
-      for i in [0...chunks]
-        x = i * size
-        chunk = string.substr(x, size)
-        brick = super(chunk)
-        brick += "Z" while brick.length < @chunkDecodeSize()
-        encrypted += brick
-
-      encrypted
+      new ChunkedString(string, chunkEncodeSize.call(@))
+        .inject [], (encrypted, chunk) =>
+          encrypted.concat([super(chunk)])
+        .join("#")
 
     decrypt: (string) ->
-      decrypted = ""
-      size = @chunkDecodeSize()
-      chunks = string.length / size
+      inject string.split("#"), "", (acc, chunk) =>
+        acc + super(chunk)
 
-      for i in [0...chunks]
-        x = i * size
-        chunk = string.substr(x, size)
-        chunk = chunk.substr(chunk, chunk.length - 1) while chunk.charAt(chunk.length - 1) == "Z"
-        brick = super(chunk)
+    chunkDecodeSize = -> @n.toString(16).length
+    chunkEncodeSize = -> Math.floor(chunkDecodeSize.call(@) / 2) - 11
+]
 
-        decrypted += brick
-
-      decrypted
-
-rsa.factory "keygen", ["RSAKey", (RSAKey) ->
+rsa.factory "keygen", ["RSAKey", "tap", (RSAKey, tap) ->
   (bits = 1024, exponent = "10001") ->
-    rsa = new RSAKey()
-    rsa.generate(bits, exponent)
-    rsa
+    tap new RSAKey(), (rsa) -> rsa.generate(bits, exponent)
 ]
 
 rsa.factory "toPubKey", ->
   (key) -> {n: key.n.toString(16), e: key.e.toString(16)}
 
-rsa.factory "fromPubKey", ["RSAKey", (RSAKey) ->
-  (key) ->
-    rsa = new RSAKey()
-    rsa.setPublic(key.n, key.e)
-    rsa
+rsa.factory "fromPubKey", ["RSAKey", "tap", (RSAKey, tap) ->
+  (key) -> tap new RSAKey(), (rsa) -> rsa.setPublic(key.n, key.e)
 ]
